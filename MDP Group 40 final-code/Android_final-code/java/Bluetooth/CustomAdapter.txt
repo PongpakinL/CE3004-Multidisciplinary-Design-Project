@@ -1,0 +1,108 @@
+package com.example.mdpgroup40.Bluetooth;
+
+import android.bluetooth.BluetoothDevice;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.mdpgroup40.R;
+
+import java.util.ArrayList;
+
+public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.ViewHolder> {
+
+    //adapter for bluetooth devices lists
+    private com.example.mdpgroup40.Bluetooth.SelectListener listener;
+    private ArrayList<BluetoothDevice> localDataSet;
+    private static final String TAG = "CustomAdapter";
+    /**
+     * Provide a reference to the type of views that you are using
+     * (custom ViewHolder).
+     */
+    public static class ViewHolder extends RecyclerView.ViewHolder {
+        private final TextView textViewN;
+        private final TextView textViewA;
+        private final LinearLayout linearLayout;
+
+        public ViewHolder(View view) {
+            super(view);
+            // Define click listener for the ViewHolder's View
+            textViewN = (TextView) view.findViewById(R.id.textViewStatus);
+            textViewA = (TextView) view.findViewById(R.id.textViewStatusValue);
+            linearLayout = view.findViewById(R.id.robotStatus);
+
+            view.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Log.d(TAG, "Element " + getAdapterPosition() + " clicked.");
+                   // view.setBackgroundColor(Color.LTGRAY);
+
+                }
+            });
+
+        }
+        public TextView getTextViewN() {
+            return textViewN;
+        }
+        public TextView getTextViewA() {
+            return textViewA;
+        }
+
+    }
+
+    /**
+     * Initialize the dataset of the Adapter.
+     *
+     * @param dataSet String[] containing the data to populate views to be used
+     * by RecyclerView.
+     */
+    public CustomAdapter(ArrayList<BluetoothDevice> dataSet, SelectListener selectListener) {
+        localDataSet = dataSet;
+        listener = selectListener;
+    }
+
+    // Create new views (invoked by the layout manager)
+    @Override
+    public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
+        // Create a new view, which defines the UI of the list item
+        View view = LayoutInflater.from(viewGroup.getContext())
+                .inflate(R.layout.text_row_item, viewGroup, false);
+
+        return new ViewHolder(view);
+    }
+
+    // Replace the contents of a view (invoked by the layout manager)
+    @Override
+    public void onBindViewHolder(ViewHolder viewHolder, final int position) {
+
+        // Get element from your dataset at this position and replace the
+        // contents of the view with that element
+
+        if(localDataSet.get(position).getName()==null){
+            viewHolder.getTextViewN().setText("Null");
+        }else{
+            viewHolder.getTextViewN().setText(localDataSet.get(position).getName());
+        }
+
+        viewHolder.getTextViewA().setText(localDataSet.get(position).getAddress());
+
+        viewHolder.linearLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                listener.onItemClicked(localDataSet.get(position));
+            }
+        });
+
+    }
+    // Return the size of your dataset (invoked by the layout manager)
+    @Override
+    public int getItemCount() {
+        return localDataSet.size();
+    }
+
+}

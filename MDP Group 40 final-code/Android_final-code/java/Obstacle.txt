@@ -1,0 +1,204 @@
+package com.example.mdpgroup40;
+
+
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Typeface;
+import android.util.Log;
+
+import static com.example.mdpgroup40.ArenaMap.east;
+import static com.example.mdpgroup40.ArenaMap.north;
+import static com.example.mdpgroup40.ArenaMap.south;
+import static com.example.mdpgroup40.ArenaMap.west;
+
+public class Obstacle {
+    int x, y;
+
+    float obsOffset1 = 3f;
+    int obsOffset2 = 28;
+    int touchCount = 0;
+
+    boolean actionDown = false;
+
+    String obsFace = "x";
+    String obsID, targetID;
+    Paint obstaclePaint;
+    Paint obstacleNumberPaint;
+
+    int[] coord;
+
+    public Obstacle(int x, int y, String obsID, int touchCount, String obsFace, String targetID) {
+        this.x = x;
+        this.y = y;
+        this.touchCount = touchCount;
+        this.obsFace = obsFace;
+        this.obsID = obsID;
+        this.targetID = targetID;
+
+        this.obstaclePaint = new Paint();
+        this.obstaclePaint.setColor(Color.BLACK);
+        this.obstaclePaint.setStyle(Paint.Style.FILL);
+        this.obstaclePaint.setStrokeWidth(3f);
+
+        this.obstacleNumberPaint = new Paint();
+        this.obstacleNumberPaint.setColor(Color.WHITE);
+        this.obstacleNumberPaint.setTextSize(10);
+        this.obstacleNumberPaint.setTypeface(Typeface.DEFAULT_BOLD);
+        this.obstacleNumberPaint.setAntiAlias(true);
+        this.obstacleNumberPaint.setStyle(Paint.Style.FILL);
+        this.obstacleNumberPaint.setTextAlign(Paint.Align.CENTER);
+    }
+
+
+    public void setObsCoordinate(int[] coord) {
+        this.coord = coord;
+    }
+
+    public int[] getObsCoordinate() {
+        return this.coord;
+    }
+
+    public int getObsX() {
+        return x;
+    }
+
+    public int getObsY() {
+        return y;
+    }
+
+
+    public String getObsFace() {
+        return obsFace;
+    }
+
+    public String getObsID() {
+        return obsID;
+    }
+
+    public int getTouchCount() {
+        return touchCount;
+    }
+
+    public int incrTouchCount() {
+        touchCount++;
+        return touchCount;
+    }
+
+    public String setObsFace(int touchCount) {
+        switch (touchCount) {
+            case 1:
+                //Green: Left (West)
+                obsFace = north;
+                break;
+            case 2:
+                //Red: Right
+                obsFace = east;
+                break;
+            case 3:
+                //Yellow: Down
+                obsFace = south;
+                break;
+            case 4:
+                //Blue: Front
+                obsFace = west;
+                break;
+            default:
+                //Black
+                obsFace = "x";
+        }
+        this.obsFace = obsFace;
+        return obsFace;
+    }
+
+
+    public void drawObsFace(Canvas canvas, int touchCount, Paint paint) {
+        switch (touchCount) {
+            case 1:
+
+                obsFace = north;
+                canvas.drawLine(x, y + obsOffset1, x + 30, y + obsOffset1, paint);
+                break;
+
+            case 2:
+
+                obsFace = east;
+                canvas.drawLine(x + obsOffset2, y, x + obsOffset2, y + 30, paint);
+                break;
+            case 3:
+
+                obsFace = south;
+                canvas.drawLine(x, y + obsOffset2, x + 30, y + obsOffset2, paint);
+                break;
+            case 4:
+
+                obsFace = west;
+                canvas.drawLine(x + obsOffset1, y, x + obsOffset1, y + 30, paint);
+                break;
+            default:
+                //Black
+                obsFace = "x";
+        }
+    }
+
+
+    //Setting action down status
+    public void setActionDown(boolean status) {
+        //When touched down
+        this.actionDown = status;
+    }
+
+    //Getting action down status
+    public boolean getActionDown() {
+        return this.actionDown;
+    }
+
+    //To set new position of draggable object
+    public void setPosition(int x, int y) {
+        this.x = x - 40; //set offset
+        this.y = y - 40;
+    }
+
+    //Use this for draggable object
+    public boolean isTouched(int x, int y) {
+//        Log.d("isTouched", x + ", " + y);
+//        Log.d("isTouched", this.x + ", " + this.y);
+
+        boolean xIsInside = x > this.x && x < this.x + 100;
+        boolean yIsInside = y > this.y && y < this.y + 100;
+
+
+//        Log.d("isTouched", xIsInside + ", " + yIsInside);
+
+        return xIsInside && yIsInside;
+    }
+
+
+    public int resetTouchCount() {
+        touchCount = 1;
+        return touchCount;
+    }
+
+
+    //Setting the obstacle's paint settings
+    public void updateObsPaint() {
+        this.obstaclePaint.setColor(Color.parseColor("#FFA45A"));
+        this.obstacleNumberPaint.setTextSize(20);
+
+    }
+
+    public String setTargetID(String targetID) {
+        this.targetID = targetID;
+        return targetID;
+    }
+
+    public String getTargetID() {
+        return targetID;
+    }
+
+    public void setObsID(String obsID) {
+        this.obsID = obsID;
+    }
+
+
+}

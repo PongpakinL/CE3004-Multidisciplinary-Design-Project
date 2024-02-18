@@ -1,0 +1,382 @@
+package com.example.mdpgroup40;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
+import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.PackageManager;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.example.mdpgroup40.Bluetooth.BluetoothActivity;
+
+import com.example.mdpgroup40.Bluetooth.BluetoothService;
+
+import java.nio.charset.Charset;
+
+public class MainActivity extends AppCompatActivity {
+
+    private static final String TAG = "MainActivity";
+
+    private static ArenaMap arenaMap;
+
+    static TextView txtRobotDirection, txtRobotCoord, txtXPosition, txtYPosition,incomingMessages, statusView;
+
+    Button btnSend,btnFastest,btnImgRec,btnStop,btnSetFace;
+    EditText etSend;
+    ImageButton btnUp,btnRight,btnLeft,btnDown,btnObstacle,btnRobot,btnReset;
+
+    static StringBuilder messages;
+
+    private String sentText;
+
+    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String text = intent.getStringExtra("theMessage");
+            try {
+                arenaMap.updateMap(text);
+            } catch (Exception e) {
+                e.printStackTrace();
+                Toast.makeText(getBaseContext(),"Please check message is sent correctly.",Toast.LENGTH_SHORT).show();
+            }
+
+            messages.append(text + "\n");
+            incomingMessages.setText(messages);
+        }
+    };
+
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
+        setSupportActionBar(myToolbar);
+
+        //Arena map
+        arenaMap = new ArenaMap(this);
+        arenaMap = findViewById(R.id.map);
+
+        txtRobotCoord = findViewById(R.id.txtRobotPosition);
+        txtRobotDirection = findViewById(R.id.txtRobotDirection);
+        txtXPosition = findViewById(R.id.txtXPosition);
+        txtYPosition = findViewById(R.id.txtYPosition);
+
+        btnObstacle = findViewById(R.id.imageButtonAdd);
+        btnRobot = findViewById(R.id.imageButtonRobot);
+        btnReset = findViewById(R.id.imageButtonReset);
+        btnSetFace = findViewById(R.id.buttonSetFace);
+
+        // Use this check to determine whether Bluetooth classic is supported on the device.
+        // Then you can selectively disable BLE-related features.
+        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH)) {
+            Toast.makeText(this, R.string.bluetooth_not_supported, Toast.LENGTH_SHORT).show();
+            finish();
+        }
+        statusView = findViewById(R.id.textViewStatusValue);
+        incomingMessages = findViewById(R.id.textViewMainMessages);
+
+        messages = new StringBuilder();
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(mReceiver, new IntentFilter("incomingMessage"));
+
+        etSend = (EditText) findViewById(R.id.edit_message);
+        btnSend = (Button) findViewById(R.id.buttonSend);
+
+        btnFastest = (Button) findViewById(R.id.buttonFastest);
+        btnImgRec = (Button) findViewById(R.id.buttonImgRec);
+
+        btnUp = (ImageButton) findViewById(R.id.imageButtonUp);
+        btnDown = (ImageButton) findViewById(R.id.imageButtonDown);
+        btnLeft = (ImageButton) findViewById(R.id.imageButtonLeft);
+        btnRight = (ImageButton) findViewById(R.id.imageButtonRight);
+
+        btnStop = (Button) findViewById(R.id.buttonStop);
+
+        btnStop.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String sentText = "f";
+
+                Toast.makeText(getBaseContext(), "Stop Robot", Toast.LENGTH_SHORT).show();
+                try {
+                    byte[] bytes = sentText.getBytes(Charset.defaultCharset());
+                    BluetoothService.write(bytes);
+
+                    messages.append(sentText + "\n");
+                    incomingMessages.setText(messages);
+
+                }catch (Exception e){
+                    Toast.makeText(getBaseContext(), "Make sure Bluetooth is connected", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        btnRobot.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                arenaMap.setStartingPoint(true);
+            }
+        });
+
+        btnSetFace.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                arenaMap.setObstacleFace();
+            }
+        });
+
+        btnSend.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String sentText = "" + etSend.getText().toString();
+                etSend.setText("");
+
+                try {
+                    sendBT(sentText);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Toast.makeText(getBaseContext(), "Make sure Bluetooth is connected", Toast.LENGTH_SHORT).show();
+                }
+                messages.append(sentText + "\n");
+                incomingMessages.setText(messages);
+            }
+        });
+
+        btnUp.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String sentText = "w";//forward
+
+//                byte[] bytes = sentText.getBytes(Charset.defaultCharset());
+//                BluetoothConnectionService.write(bytes);
+                try {
+                    arenaMap.moveRobot(sentText);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Toast.makeText(getBaseContext(),"Make sure robot is set",Toast.LENGTH_SHORT).show();
+                }
+
+                try {
+                    sendBT(sentText);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Toast.makeText(getBaseContext(), "Make sure Bluetooth is connected", Toast.LENGTH_SHORT).show();
+                }
+
+//                messages.append(sentText + "\n");
+//                incomingMessages.setText(messages);
+            }
+        });
+
+        btnDown.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String sentText = "s";//reverse
+//                byte[] bytes = sentText.getBytes(Charset.defaultCharset());
+//                BluetoothConnectionService.write(bytes);
+
+                try {
+                    arenaMap.moveRobot(sentText);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Toast.makeText(getBaseContext(),"Make sure robot is set",Toast.LENGTH_SHORT).show();
+                }
+                try {
+                    sendBT(sentText);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Toast.makeText(getBaseContext(), "Make sure Bluetooth is connected", Toast.LENGTH_SHORT).show();
+                }
+
+//                messages.append(sentText + "\n");
+//                incomingMessages.setText(messages);
+            }
+        });
+
+        btnLeft.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String sentText = "a";//turn left
+//                byte[] bytes = sentText.getBytes(Charset.defaultCharset());
+//                BluetoothConnectionService.write(bytes);
+                try {
+                    arenaMap.moveRobot(sentText);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Toast.makeText(getBaseContext(),"Make sure robot is set",Toast.LENGTH_SHORT).show();
+                }
+                try {
+                    sendBT(sentText);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Toast.makeText(getBaseContext(), "Make sure Bluetooth is connected", Toast.LENGTH_SHORT).show();
+                }
+
+//                messages.append(sentText + "\n");
+//                incomingMessages.setText(messages);
+            }
+        });
+        btnRight.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String sentText = "d";//turn right
+//                byte[] bytes = sentText.getBytes(Charset.defaultCharset());
+//                BluetoothConnectionService.write(bytes);
+
+                try {
+                    arenaMap.moveRobot(sentText);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Toast.makeText(getBaseContext(),"Make sure robot is set",Toast.LENGTH_SHORT).show();
+                }
+
+                try {
+                    sendBT(sentText);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Toast.makeText(getBaseContext(), "Make sure Bluetooth is connected", Toast.LENGTH_SHORT).show();
+                }
+
+//                messages.append(sentText + "\n");
+//                incomingMessages.setText(messages);
+            }
+        });
+        btnFastest.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String sentText = "beginFastest";
+
+                try{
+                    byte[] bytes = sentText.getBytes(Charset.defaultCharset());
+                    BluetoothService.write(bytes);
+                }catch (Exception e){
+                    Toast.makeText(getBaseContext(), "Make sure Bluetooth is connected", Toast.LENGTH_SHORT).show();
+                }
+
+                messages.append(sentText + "\n");
+                incomingMessages.setText(messages);
+            }
+        });
+        btnImgRec.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                sentText = "beginImgRec:";
+
+                for(int i=0;i<arenaMap.getObstacleList().size();i++){
+                    sentText = sentText + arenaMap.getObstacleList().get(i).obsID + "," + arenaMap.getObstacleList().get(i).getObsFace() + ","  + String.valueOf(arenaMap.getObstacleList().get(i).getObsCoordinate()[0]) + "," + String.valueOf(arenaMap.getObstacleList().get(i).getObsCoordinate()[1]) + ":";
+                }
+
+                sentText = sentText + "Robot," + arenaMap.getRobotDirection() + "," + String.valueOf(arenaMap.getCurCoord()[0]) + "," + String.valueOf(19 - arenaMap.getCurCoord()[1]);
+
+
+                new AlertDialog.Builder(MainActivity.this)
+                        .setTitle("Send Message")
+                        .setMessage(sentText)
+
+                        // Specifying a listener allows you to take an action before dismissing the dialog.
+                        // The dialog is automatically dismissed when a dialog button is clicked.
+                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+
+
+                                try{
+                                    System.out.println(sentText);
+                                    byte[] bytes = sentText.getBytes(Charset.defaultCharset());
+                                    BluetoothService.write(bytes);
+                                }catch (Exception e){
+                                    Toast.makeText(getBaseContext(), "Make sure Bluetooth is connected", Toast.LENGTH_SHORT).show();
+                                }
+
+                                messages.append(sentText + "\n");
+                                incomingMessages.setText(messages);
+
+                            }
+                        } )
+                        // A null listener allows the button to dismiss the dialog and take no further action.
+                        .setNegativeButton(android.R.string.no, null)
+                        .show();
+
+
+
+
+                }
+
+
+
+        });
+
+        btnObstacle.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                arenaMap.addObstacle();
+            }
+        });
+
+        btnReset.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                arenaMap.resetArena();
+
+            }
+        });
+
+    }
+
+    public void onClickBluetooth(View view) {
+        Intent intent = new Intent(this, BluetoothActivity.class);
+        startActivity(intent);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        //unregisterReceiver();
+
+    }
+
+    public static void setRobotDetails(int x, int y, String direction) {
+        Log.d(TAG, "setRobotDetails: Getting current robot coordinates");
+
+        txtRobotCoord.setText("Robot Position: " + String.valueOf(x) + "," +
+                String.valueOf(y));
+        txtRobotDirection.setText("Robot Direction: " + direction);
+        
+    }
+
+    public static void setXPosition(int x) {
+        Log.d(TAG, "ZXC setXPosition" + x);
+        txtXPosition.setText("X: " + String.valueOf(x));
+    }
+
+    public static void setYPosition(int Y) {
+        Log.d(TAG, "ZXC setYPosition" + Y);
+        txtYPosition.setText("Y: " + String.valueOf(Y));
+    }
+
+    public static void setRobotStatus(String status) {
+        Log.d(TAG, "Robot status" + status);
+        statusView.setText(status);
+    }
+
+    public void sendBT(String sentText) throws Exception{
+        byte[] bytes = sentText.getBytes(Charset.defaultCharset());
+        BluetoothService.write(bytes);
+    }
+}

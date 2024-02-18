@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".Bluetooth.BluetoothActivity">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/my_child_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/darker_blue"
+        android:minHeight="?attr/actionBarSize"
+        android:theme="?attr/actionBarTheme"
+        app:titleTextColor="@color/white" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="right"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/textViewPageNameStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            android:text="@string/bluetooth_title"
+            android:textSize="24sp" />
+
+        <Button
+            android:id="@+id/btnOnOff"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/darker_blue"
+            android:gravity="center"
+            android:text="ON/OFF"
+            android:textColor="@color/white" />
+
+        <Button
+            android:id="@+id/buttonDiscoverable"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:backgroundTint="@color/darker_blue"
+            android:drawableStart="@android:drawable/ic_menu_search"
+            android:gravity="center"
+            android:onClick="onClickDiscover"
+            android:text="DISCOVERABLE"
+            android:textColor="@color/white"
+            android:drawableLeft="@android:drawable/ic_menu_search" />
+
+        <Button
+            android:id="@+id/buttonSearch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:backgroundTint="@color/darker_blue"
+            android:drawableStart="@android:drawable/ic_menu_search"
+            android:gravity="center"
+            android:onClick="onClickSearch"
+            android:text="@string/bluetooth_search"
+            android:textColor="@color/white"
+            android:drawableLeft="@android:drawable/ic_menu_search" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/textViewdPaired"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/darker_blue"
+        android:text="@string/bluetooth_paired"
+        android:textColor="@color/white" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvPairedDevices"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:scrollbarAlwaysDrawVerticalTrack="true"
+        android:scrollbars="vertical" />
+
+    <TextView
+        android:id="@+id/textViewDeviceFound"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/darker_blue"
+        android:text="@string/bluetooth_devices"
+        android:textColor="@color/white" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvDeviceFound"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:scrollbarAlwaysDrawVerticalTrack="true"
+        android:scrollbars="vertical">
+
+    </androidx.recyclerview.widget.RecyclerView>
+
+    <View
+        android:id="@+id/divider"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="?android:attr/listDivider" />
+
+    <Button
+        android:id="@+id/btnStartConnection"
+        android:layout_width="match_parent"
+        android:layout_height="43dp"
+        android:backgroundTint="@color/darker_blue"
+        android:text="Connect"
+        android:textColor="@color/white" />
+
+</LinearLayout>
